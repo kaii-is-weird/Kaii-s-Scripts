@@ -1,0 +1,72 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Função para criar o aviso na tela
+local function createUI()
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "CollisionNotification"
+    screenGui.Parent = game:GetService("CoreGui")
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 250, 0, 60)
+    frame.Position = UDim2.new(1, -260, 1, -70) -- Canto inferior direito
+    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    frame.BorderSizePixel = 2
+    frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+    frame.Parent = screenGui
+
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Text = "Anti Unanchored Collision Enabled"
+    titleLabel.Size = UDim2.new(1, 0, 0, 30)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.TextScaled = true
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.Parent = frame
+
+    local usernameLabel = Instance.new("TextLabel")
+    usernameLabel.Text = "@kaii_is_weirdo"
+    usernameLabel.Size = UDim2.new(1, 0, 0, 20)
+    usernameLabel.Position = UDim2.new(0, 0, 0, 35)
+    usernameLabel.BackgroundTransparency = 1
+    usernameLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    usernameLabel.TextScaled = true
+    usernameLabel.Font = Enum.Font.Gotham
+    usernameLabel.Parent = frame
+
+    -- Aguarda 4 segundos e remove o aviso
+    task.delay(4, function()
+        screenGui:Destroy()
+    end)
+end
+
+-- Função para desativar colisão com objetos Unanchored
+local function disableCollision(character)
+    local rootPart = character:FindFirstChild("HumanoidRootPart") or character:WaitForChild("HumanoidRootPart")
+
+    for _, part in pairs(workspace:GetDescendants()) do
+        if part:IsA("BasePart") and not part.Anchored then
+            local noCollisionConstraint = Instance.new("NoCollisionConstraint")
+            noCollisionConstraint.Part0 = rootPart
+            noCollisionConstraint.Part1 = part
+            noCollisionConstraint.Parent = rootPart
+        end
+    end
+
+    workspace.DescendantAdded:Connect(function(descendant)
+        if descendant:IsA("BasePart") and not descendant.Anchored then
+            local noCollisionConstraint = Instance.new("NoCollisionConstraint")
+            noCollisionConstraint.Part0 = rootPart
+            noCollisionConstraint.Part1 = descendant
+            noCollisionConstraint.Parent = rootPart
+        end
+    end)
+end
+
+-- Executa quando o personagem do jogador for carregado
+LocalPlayer.CharacterAdded:Connect(function(character)
+    disableCollision(character)
+end)
+
+-- Criar UI quando o script for executado
+createUI()
