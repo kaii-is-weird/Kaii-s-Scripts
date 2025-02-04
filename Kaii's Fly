@@ -8,13 +8,13 @@ local isR6 = humanoid.RigType == Enum.HumanoidRigType.R6
 local torso = isR6 and character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso") or character:FindFirstChild("HumanoidRootPart")
 if not torso then return end
 
--- Criando a GUI
+-- Criando a GUI menor
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 100)
-frame.Position = UDim2.new(0.5, -100, 0.1, 0)
+frame.Size = UDim2.new(0, 150, 0, 60) -- GUI menor
+frame.Position = UDim2.new(0.5, -75, 0.1, 0)
 frame.BackgroundColor3 = Color3.new(0, 0, 0)
 frame.Active = true -- Permite interação
 frame.Draggable = true -- Permite arrastar no PC
@@ -29,8 +29,8 @@ title.BackgroundTransparency = 1
 title.Parent = frame
 
 local button = Instance.new("TextButton")
-button.Text = "Ativar Fly"
-button.Size = UDim2.new(0.8, 0, 0.4, 0)
+button.Text = "Ativar"
+button.Size = UDim2.new(0.8, 0, 0.5, 0)
 button.Position = UDim2.new(0.1, 0, 0.5, 0)
 button.TextScaled = true
 button.BackgroundColor3 = Color3.new(1, 1, 1)
@@ -45,7 +45,7 @@ local speed = 0
 -- Função do Fly
 local function toggleFly()
     flyActive = not flyActive
-    button.Text = flyActive and "Desativar Fly" or "Ativar Fly"
+    button.Text = flyActive and "Desativar" or "Ativar"
 
     if flyActive then
         local bg = Instance.new("BodyGyro", torso)
