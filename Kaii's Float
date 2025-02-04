@@ -1,1 +1,42 @@
+-- Script Feito Por Kaii
+-- Creditos: @kaii_is_weirdo
 
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local flying, speed, bodyVelocity = false, 50
+local UserInputService = game:GetService("UserInputService")
+
+-- Criando a GUI
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+local button = Instance.new("TextButton", gui)
+button.Size, button.Position, button.Text = UDim2.new(0, 150, 0, 40), UDim2.new(1, -160, 0, 10), "Kaii's Float"
+button.BackgroundTransparency, button.TextScaled, button.TextColor3, button.BackgroundColor3 = 0.3, true, Color3.new(1, 1, 1), Color3.new(0, 0, 0)
+Instance.new("UICorner", button).CornerRadius = UDim.new(0, 15)
+
+-- Função de voo
+local function toggleFly()
+    flying = not flying
+    button.Text, button.Active = flying and "Floating..." or "Kaii's Float", not flying
+    if flying then
+        bodyVelocity = Instance.new("BodyVelocity", character.HumanoidRootPart)
+        bodyVelocity.MaxForce = Vector3.new(0, math.huge, 0)
+        game:GetService("RunService").RenderStepped:Connect(function()
+            if flying then
+                bodyVelocity.Velocity = Vector3.new(character.Humanoid.MoveDirection.X * speed, speed, character.Humanoid.MoveDirection.Z * speed)
+            end
+        end)
+    else
+        if bodyVelocity then bodyVelocity:Destroy() end
+    end
+end
+
+button.MouseButton1Click:Connect(toggleFly)
+
+-- Controle de teclado
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if flying and not gameProcessed and input.UserInputType == Enum.UserInputType.Keyboard then
+        local moveDir = (input.KeyCode == Enum.KeyCode.W and Vector3.new(0, 0, -1) or input.KeyCode == Enum.KeyCode.S and Vector3.new(0, 0, 1) or
+                         input.KeyCode == Enum.KeyCode.A and Vector3.new(-1, 0, 0) or input.KeyCode == Enum.KeyCode.D and Vector3.new(1, 0, 0)) or Vector3.new()
+        bodyVelocity.Velocity = Vector3.new(moveDir.X * speed, speed, moveDir.Z * speed)
+    end
+end)
