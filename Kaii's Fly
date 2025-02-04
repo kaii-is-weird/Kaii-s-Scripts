@@ -1,0 +1,110 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:FindFirstChildOfClass("Humanoid")
+local flyActive = false -- Estado do fly
+
+-- Verifica se o personagem é R6 ou R15
+local isR6 = humanoid.RigType == Enum.HumanoidRigType.R6
+local torso = isR6 and character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso") or character:FindFirstChild("HumanoidRootPart")
+if not torso then return end
+
+-- Criando a GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 100)
+frame.Position = UDim2.new(0.5, -100, 0.1, 0)
+frame.BackgroundColor3 = Color3.new(0, 0, 0)
+frame.Active = true -- Permite interação
+frame.Draggable = true -- Permite arrastar no PC
+frame.Parent = screenGui
+
+local title = Instance.new("TextLabel")
+title.Text = "Kaii's Fly"
+title.Size = UDim2.new(1, 0, 0.4, 0)
+title.TextScaled = true
+title.TextColor3 = Color3.new(1, 1, 1)
+title.BackgroundTransparency = 1
+title.Parent = frame
+
+local button = Instance.new("TextButton")
+button.Text = "Ativar Fly"
+button.Size = UDim2.new(0.8, 0, 0.4, 0)
+button.Position = UDim2.new(0.1, 0, 0.5, 0)
+button.TextScaled = true
+button.BackgroundColor3 = Color3.new(1, 1, 1)
+button.TextColor3 = Color3.new(0, 0, 0)
+button.Parent = frame
+
+-- Variáveis do voo
+local flying = false
+local maxspeed = 50
+local speed = 0
+
+-- Função do Fly
+local function toggleFly()
+    flyActive = not flyActive
+    button.Text = flyActive and "Desativar Fly" or "Ativar Fly"
+
+    if flyActive then
+        local bg = Instance.new("BodyGyro", torso)
+        bg.P = 9e4
+        bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+        bg.cframe = torso.CFrame
+
+        local bv = Instance.new("BodyVelocity", torso)
+        bv.velocity = Vector3.new(0, 0.1, 0)
+        bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
+
+        humanoid.PlatformStand = true
+        flying = true
+
+        task.spawn(function()
+            while flyActive and humanoid.Health > 0 do
+                task.wait()
+                
+                speed = math.min(speed + 1, maxspeed)
+                bv.velocity = workspace.CurrentCamera.CFrame.LookVector * speed
+                bg.cframe = workspace.CurrentCamera.CFrame
+            end
+
+            -- Resetar estado quando o Fly for desativado
+            bg:Destroy()
+            bv:Destroy()
+            humanoid.PlatformStand = false
+            flying = false
+        end)
+
+    else
+        humanoid.PlatformStand = false
+        flying = false
+    end
+end
+
+button.MouseButton1Click:Connect(toggleFly)
+
+-- Sistema de arrastar no Mobile
+local userInputService = game:GetService("UserInputService")
+local dragging, dragStart, startPos
+
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+    end
+end)
+
+frame.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+frame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
